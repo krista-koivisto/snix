@@ -1,0 +1,73 @@
+#include "stdsnix.snx"
+
+#define LOOP_MAX 3
+
+/*float SampleOffset(float2 offset)
+{
+    // Get the pixel size by divding 1 by the $size variable
+    float posX = $pos[0] + ((1.0f / $size[0]) * offset[0]);
+    float posY = $pos[1] + ((1.0f / $size[1]) * offset[1]);
+    
+    return sample((float2){posX, posY});
+}
+
+float SimpleEdgeDetect(float bias)
+{
+    float value = sample($pos);
+    
+    // Sample pixels in a + formation and check against the bias
+    if (!(SampleOffset((float2){-1.0f,  0.0f}) >= bias  &&
+          SampleOffset((float2){ 1.0f,  0.0f}) >= bias  &&
+          SampleOffset((float2){ 0.0f, -1.0f}) >= bias  &&
+          SampleOffset((float2){ 0.0f,  1.0f}) >= bias) &&
+          value >= bias) // Compare the current pixel value as well
+    {
+        
+        float ret = 1.0f;
+    }
+    else
+    {
+        float ret = 0.0f;
+    }
+    
+    return __if__;
+}*/
+
+/*float DegToRad(float angle)
+{
+    float pi = 3.14159f;
+    return (angle * pi / 180.0f);
+}
+
+float4 AngleToNormal(float intensity)
+{
+    float theta = DegToRad(sample($pos) * 360.0f);
+    float c = cos(theta) * intensity;
+    float s = sin(theta) * intensity;
+    float x = (c - s) / 2.0f + 0.5f;
+    float y = (c + s) / 2.0f + 0.5f;
+    float z = 1.0f;
+    float w = 1.0f;
+    
+    return (float4){x, y, z, w};
+}
+
+float2 sphere_uv(float3 normal, float tiling)
+{
+    float pi = 3.14159f;
+    float two_pi = pi * 2.0f;
+    float u = (atan2((float2){normal[0], normal[2]}) + pi) / two_pi;
+    float v = atan2((float2){1.0f, normal[1]}) / pi;
+    float2 uv = (float2){u * tiling, v * tiling};
+    
+    return uv;
+}*/
+
+float test()
+{
+    float3 lol = {0.0f, 0.0f, 0.0f};
+    float3 lol2 = {0.0f, 0.0f, 0.0f};
+    
+    return dot(lol, lol2);
+}
+

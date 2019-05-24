@@ -1,0 +1,24 @@
+float4 SampleOffsetColor(float2 offset)
+{
+    // Get the pixel size by divding 1 by the $size variable
+    float2 pixelSize = (float2){1.0f, 1.0f} / $size;
+    return sampleColor((float2){$pos + pixelSize * offset});
+}
+ 
+float SampleOffset(float2 offset)
+{
+    // Get the pixel size by divding 1 by the $size variable
+    float2 pixelSize = (float2){1.0f, 1.0f} / $size;
+    return sample((float2){$pos + pixelSize * offset});
+}
+
+float4 SampleGrid(float current, float size)
+{
+    float rowSize = sqrt(size);
+    float rowSizeHalf = floor(rowSize / 2.0f);
+    float row = floor(current / rowSize);
+    float x = current - (row * rowSize) - rowSizeHalf;
+    float y = row - rowSizeHalf;
+    
+    return SampleOffsetColor((float2){x, y});
+}

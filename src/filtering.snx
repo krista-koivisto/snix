@@ -1,0 +1,308 @@
+#include "stdsnix.snx"
+
+float4 SamplePositionOffsetColor(float2 offset, float2 pos)
+{
+    // Get the pixel size by divding 1 by the size of the input image
+    // and then multiply that by the offset passed.
+    float posX = pos[0] + ((1.0f / $size[0]) * offset[0]);
+    float posY = pos[1] + ((1.0f / $size[1]) * offset[1]);
+    
+    return sampleColor((float2){posX, posY});
+}
+
+float4 SampleOffsetColor(float2 offset)
+{
+    // Get the pixel size by divding 1 by the size of the input image
+    // and then multiply that by the offset passed.
+    float posX = $pos[0] + ((1.0f / $size[0]) * offset[0]);
+    float posY = $pos[1] + ((1.0f / $size[1]) * offset[1]);
+    
+    return sampleColor((float2){posX, posY});
+}
+
+float fract(float input)
+{
+    return (input - floor(input));
+}
+
+float BSpline(float x)
+{
+    float f = abs(x);
+    
+    if(f >= 0.0f && f <= 1.0f)
+    {
+        float ret = (2.0f / 3.0f) + (0.5f) * (f * f * f) - (f * f);
+    }
+    else
+    {
+        if(f > 1.0f && f <= 2.0f)
+        {
+            float ret = 1.0f / 6.0f * pow(( 2.0f - f), 3.0f);
+        }
+        else
+        {
+            float ret = 1.0f;
+        }
+    }
+    
+    return __if__;
+}
+
+float4 BSplinePixel(float row, float column, float fractX, float fractY)
+{
+    // First row
+    float f0 = BSpline(row - fractX);
+    float4 cooef1 = (float4){f0, f0, f0, f0};
+    float f1 = BSpline(-(column - fractY));
+    float4 cooef2 = (float4){f1, f1, f1, f1};
+    
+    return (cooef2 * cooef1);
+}
+
+float4 BicubicBSpline(float2 pos)
+{
+    float fx = fract($pos[0] * $size[0]);
+    float fy = fract($pos[1] * $size[1]);
+    
+    float row = -1.0f;
+    float column = -1.0f;
+    
+    // First row
+    float4 pixel = BSplinePixel(row, column, fx, fy);
+    float4 denom = pixel;
+    float4 sum = pixel * SamplePositionOffsetColor((float2){row, column}, pos);;
+    column++;
+    
+    pixel = BSplinePixel(row, column, fx, fy);
+    denom += pixel;
+    sum += pixel * SamplePositionOffsetColor((float2){row, column}, pos);
+    column++;
+    
+    pixel = BSplinePixel(row, column, fx, fy);
+    denom += pixel;
+    sum += pixel * SamplePositionOffsetColor((float2){row, column}, pos);
+    column++;
+    
+    pixel = BSplinePixel(row, column, fx, fy);
+    denom += pixel;
+    sum += pixel * SamplePositionOffsetColor((float2){row, column}, pos);
+    column = -1.0f;
+    row++;
+    
+    // Second row
+    pixel = BSplinePixel(row, column, fx, fy);
+    denom += pixel;
+    sum += pixel * SamplePositionOffsetColor((float2){row, column}, pos);
+    column++;
+    
+    pixel = BSplinePixel(row, column, fx, fy);
+    denom += pixel;
+    sum += pixel * SamplePositionOffsetColor((float2){row, column}, pos);
+    column++;
+    
+    pixel = BSplinePixel(row, column, fx, fy);
+    denom += pixel;
+    sum += pixel * SamplePositionOffsetColor((float2){row, column}, pos);
+    column++;
+    
+    pixel = BSplinePixel(row, column, fx, fy);
+    denom += pixel;
+    sum += pixel * SamplePositionOffsetColor((float2){row, column}, pos);
+    column = -1.0f;
+    row++;
+    
+    // Third row
+    pixel = BSplinePixel(row, column, fx, fy);
+    denom += pixel;
+    sum += pixel * SamplePositionOffsetColor((float2){row, column}, pos);
+    column++;
+    
+    pixel = BSplinePixel(row, column, fx, fy);
+    denom += pixel;
+    sum += pixel * SamplePositionOffsetColor((float2){row, column}, pos);
+    column++;
+    
+    pixel = BSplinePixel(row, column, fx, fy);
+    denom += pixel;
+    sum += pixel * SamplePositionOffsetColor((float2){row, column}, pos);
+    column++;
+    
+    pixel = BSplinePixel(row, column, fx, fy);
+    denom += pixel;
+    sum += pixel * SamplePositionOffsetColor((float2){row, column}, pos);
+    column = -1.0f;
+    row++;
+    
+    // Fourth row
+    pixel = BSplinePixel(row, column, fx, fy);
+    denom += pixel;
+    sum += pixel * SamplePositionOffsetColor((float2){row, column}, pos);
+    column++;
+    
+    pixel = BSplinePixel(row, column, fx, fy);
+    denom += pixel;
+    sum += pixel * SamplePositionOffsetColor((float2){row, column}, pos);
+    column++;
+    
+    pixel = BSplinePixel(row, column, fx, fy);
+    denom += pixel;
+    sum += pixel * SamplePositionOffsetColor((float2){row, column}, pos);
+    column++;
+    
+    pixel = BSplinePixel(row, column, fx, fy);
+    denom += pixel;
+    sum += pixel * SamplePositionOffsetColor((float2){row, column}, pos);
+    
+    return sum / denom;
+}
+
+float CatmullRom( float x )
+{
+    float f = abs(x);
+    const float B = 0.0f;
+    const float C = 0.5f;
+    
+    if(f < 1.0f)
+    {
+        float ret =  ((12.0f - 9.0f * B - 6.0f * C) * (f * f * f) +
+        (-18.0f + 12.0f * B + 6.0f * C) * (f * f) +
+        (6.0f - 2.0f * B)) / 6.0f;
+    }
+    else
+    {
+        if(f >= 1.0f && f < 2.0f)
+        {
+            float ret = ((-B - 6.0f * C) * (f * f * f) +
+            (6.0f * B + 30.0f * C) * (f * f) +
+            (-(12.0f * B) - 48.0f * C) * f +
+            8.0f * B + 24.0f * C) / 6.0f;
+        }
+        else
+        {
+            float ret = 0.0f;
+        }
+    }
+    
+    return __if__;
+}
+
+float4 CatmullRomPixel(float row, float column, float fractX, float fractY)
+{
+    // First row
+    float f0 = CatmullRom(row - fractX);
+    float4 cooef1 = (float4){f0, f0, f0, f0};
+    float f1 = CatmullRom(-(column - fractY));
+    float4 cooef2 = (float4){f1, f1, f1, f1};
+    
+    return (cooef2 * cooef1);
+}
+
+float4 BicubicCatmullRom(float2 pos)
+{
+    float fx = fract($pos[0] * $size[0]);
+    float fy = fract($pos[1] * $size[1]);
+    
+    float row = -1.0f;
+    float column = -1.0f;
+    
+    // First row
+    float4 pixel = CatmullRomPixel(row, column, fx, fy);
+    float4 denom = pixel;
+    float4 sum = pixel * SamplePositionOffsetColor((float2){row, column}, pos);
+    column++;
+    
+    pixel = CatmullRomPixel(row, column, fx, fy);
+    denom += pixel;
+    sum += pixel * SamplePositionOffsetColor((float2){row, column}, pos);
+    column++;
+    
+    pixel = CatmullRomPixel(row, column, fx, fy);
+    denom += pixel;
+    sum += pixel * SamplePositionOffsetColor((float2){row, column}, pos);
+    column++;
+    
+    pixel = CatmullRomPixel(row, column, fx, fy);
+    denom += pixel;
+    sum += pixel * SamplePositionOffsetColor((float2){row, column}, pos);
+    column = -1.0f;
+    row++;
+    
+    // Second row
+    pixel = CatmullRomPixel(row, column, fx, fy);
+    denom += pixel;
+    sum += pixel * SamplePositionOffsetColor((float2){row, column}, pos);
+    column++;
+    
+    pixel = CatmullRomPixel(row, column, fx, fy);
+    denom += pixel;
+    sum += pixel * SamplePositionOffsetColor((float2){row, column}, pos);
+    column++;
+    
+    pixel = CatmullRomPixel(row, column, fx, fy);
+    denom += pixel;
+    sum += pixel * SamplePositionOffsetColor((float2){row, column}, pos);
+    column++;
+    
+    pixel = CatmullRomPixel(row, column, fx, fy);
+    denom += pixel;
+    sum += pixel * SamplePositionOffsetColor((float2){row, column}, pos);
+    column = -1.0f;
+    row++;
+    
+    // Third row
+    pixel = CatmullRomPixel(row, column, fx, fy);
+    denom += pixel;
+    sum += pixel * SamplePositionOffsetColor((float2){row, column}, pos);
+    column++;
+    
+    pixel = CatmullRomPixel(row, column, fx, fy);
+    denom += pixel;
+    sum += pixel * SamplePositionOffsetColor((float2){row, column}, pos);
+    column++;
+    
+    pixel = CatmullRomPixel(row, column, fx, fy);
+    denom += pixel;
+    sum += pixel * SamplePositionOffsetColor((float2){row, column}, pos);
+    column++;
+    
+    pixel = CatmullRomPixel(row, column, fx, fy);
+    denom += pixel;
+    sum += pixel * SamplePositionOffsetColor((float2){row, column}, pos);
+    column = -1.0f;
+    row++;
+    
+    // Fourth row
+    pixel = CatmullRomPixel(row, column, fx, fy);
+    denom += pixel;
+    sum += pixel * SamplePositionOffsetColor((float2){row, column}, pos);
+    column++;
+    
+    pixel = CatmullRomPixel(row, column, fx, fy);
+    denom += pixel;
+    sum += pixel * SamplePositionOffsetColor((float2){row, column}, pos);
+    column++;
+    
+    pixel = CatmullRomPixel(row, column, fx, fy);
+    denom += pixel;
+    sum += pixel * SamplePositionOffsetColor((float2){row, column}, pos);
+    column++;
+    
+    pixel = CatmullRomPixel(row, column, fx, fy);
+    denom += pixel;
+    sum += pixel * SamplePositionOffsetColor((float2){row, column}, pos);
+    
+    return sum / denom;
+}
+
+float4 BilinearFilter(float2 pos)
+{
+    float4 tl = SamplePositionOffsetColor((float2){0.0f, 0.0f}, pos);
+    float4 tr = SamplePositionOffsetColor((float2){1.0f, 0.0f}, pos);
+    float4 bl = SamplePositionOffsetColor((float2){0.0f, 1.0f}, pos);
+    float4 br = SamplePositionOffsetColor((float2){1.0f, 1.0f}, pos);
+    float fx = fract($pos[0] * $size[0]);
+    float fy = fract($pos[1] * $size[1]);
+    float4 tA = lerp(tl, tr, fx);
+    float4 tB = lerp(bl, br, fx);
+    return lerp(tA, tB, fy);
+}

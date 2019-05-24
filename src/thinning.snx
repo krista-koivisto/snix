@@ -1,0 +1,201 @@
+#include "src/stdsnix.snx"
+
+float SampleOffset(float2 offset)
+{
+    // Get the pixel size by divding 1 by the size of the input image
+    // and then multiply that by the offset passed.
+    float posX = $pos[0] + ((1.0f / $size[0]) * offset[0]);
+    float posY = $pos[1] + ((1.0f / $size[1]) * offset[1]);
+    
+    return sample((float2){posX, posY});
+}
+
+float ThinLeft_Step1()
+{
+    if (SampleOffset((float2){-1.0f, -1.0f}) <= 0.1f &&
+        SampleOffset((float2){ 0.0f, -1.0f}) <= 0.1f &&
+        SampleOffset((float2){ 1.0f, -1.0f}) <= 0.1f &&
+        //SampleOffset((float2){-1.0f,  0.0f}) <= 0.1f &&
+        SampleOffset((float2){ 0.0f,  0.0f}) >= 0.9f &&
+        //SampleOffset((float2){ 1.0f,  0.0f}) <= 0.1f &&
+        SampleOffset((float2){-1.0f,  1.0f}) >= 0.9f &&
+        SampleOffset((float2){ 0.0f,  1.0f}) >= 0.9f &&
+        SampleOffset((float2){ 1.0f,  1.0f}) >= 0.9f)
+    {
+        float ret = 0.0f;
+    }
+    else
+    {
+        float ret = 1.0f;
+    }
+    
+    return __if__;
+}
+
+float ThinRight_Step1()
+{
+    if (//SampleOffset((float2){-1.0f, -1.0f}) <= 0.1f &&
+        SampleOffset((float2){ 0.0f, -1.0f}) <= 0.1f &&
+        SampleOffset((float2){ 1.0f, -1.0f}) <= 0.1f &&
+        SampleOffset((float2){-1.0f,  0.0f}) >= 0.9f &&
+        SampleOffset((float2){ 0.0f,  0.0f}) >= 0.9f &&
+        SampleOffset((float2){ 1.0f,  0.0f}) <= 0.1f &&
+        //SampleOffset((float2){-1.0f,  1.0f}) <= 0.1f &&
+        SampleOffset((float2){ 0.0f,  1.0f}) >= 0.9f)
+        //SampleOffset((float2){ 1.0f,  1.0f}) <= 0.1f)
+    {
+        float ret = 0.0f;
+    }
+    else
+    {
+        float ret = 1.0f;
+    }
+    
+    return __if__;
+}
+
+float ThinLeft_Step2()
+{
+    if (SampleOffset((float2){-1.0f, -1.0f}) >= 0.9f &&
+        //SampleOffset((float2){ 0.0f, -1.0f}) <= 0.1f &&
+        SampleOffset((float2){ 1.0f, -1.0f}) <= 0.1f &&
+        SampleOffset((float2){-1.0f,  0.0f}) >= 0.9f &&
+        SampleOffset((float2){ 0.0f,  0.0f}) >= 0.9f &&
+        SampleOffset((float2){ 1.0f,  0.0f}) <= 0.1f &&
+        SampleOffset((float2){-1.0f,  1.0f}) >= 0.9f &&
+        //SampleOffset((float2){ 0.0f,  1.0f}) >= 0.9f &&
+        SampleOffset((float2){ 1.0f,  1.0f}) <= 0.1f)
+    {
+        float ret = 0.0f;
+    }
+    else
+    {
+        float ret = 1.0f;
+    }
+    
+    return __if__;
+}
+
+float ThinRight_Step2()
+{
+    if (//SampleOffset((float2){-1.0f, -1.0f}) <= 0.1f &&
+        SampleOffset((float2){ 0.0f, -1.0f}) >= 0.9f &&
+        //SampleOffset((float2){ 1.0f, -1.0f}) <= 0.1f &&
+        SampleOffset((float2){-1.0f,  0.0f}) >= 0.9f &&
+        SampleOffset((float2){ 0.0f,  0.0f}) >= 0.9f &&
+        SampleOffset((float2){ 1.0f,  0.0f}) <= 0.1f &&
+        //SampleOffset((float2){-1.0f,  1.0f}) <= 0.1f &&
+        SampleOffset((float2){ 0.0f,  1.0f}) <= 0.1f &&
+        SampleOffset((float2){ 1.0f,  1.0f}) <= 0.1f)
+    {
+        float ret = 0.0f;
+    }
+    else
+    {
+        float ret = 1.0f;
+    }
+    
+    return __if__;
+}
+
+float ThinLeft_Step3()
+{
+    if (SampleOffset((float2){-1.0f, -1.0f}) >= 0.9f &&
+        SampleOffset((float2){ 0.0f, -1.0f}) >= 0.9f &&
+        SampleOffset((float2){ 1.0f, -1.0f}) >= 0.9f &&
+        //SampleOffset((float2){-1.0f,  0.0f}) >= 0.9f &&
+        SampleOffset((float2){ 0.0f,  0.0f}) >= 0.9f &&
+        //SampleOffset((float2){ 1.0f,  0.0f}) <= 0.1f &&
+        SampleOffset((float2){-1.0f,  1.0f}) <= 0.1f &&
+        SampleOffset((float2){ 0.0f,  1.0f}) <= 0.1f &&
+        SampleOffset((float2){ 1.0f,  1.0f}) <= 0.1f)
+    {
+        float ret = 0.0f;
+    }
+    else
+    {
+        float ret = 1.0f;
+    }
+    
+    return __if__;
+}
+
+float ThinRight_Step3()
+{
+    if (//SampleOffset((float2){-1.0f, -1.0f}) >= 0.9f &&
+        SampleOffset((float2){ 0.0f, -1.0f}) >= 0.9f &&
+        //SampleOffset((float2){ 1.0f, -1.0f}) <= 0.1f &&
+        SampleOffset((float2){-1.0f,  0.0f}) >= 0.1f &&
+        SampleOffset((float2){ 0.0f,  0.0f}) >= 0.9f &&
+        SampleOffset((float2){ 1.0f,  0.0f}) >= 0.9f &&
+        SampleOffset((float2){-1.0f,  1.0f}) <= 0.1f &&
+        SampleOffset((float2){ 0.0f,  1.0f}) <= 0.1f)
+        //SampleOffset((float2){ 1.0f,  1.0f}) <= 0.1f)
+    {
+        float ret = 0.0f;
+    }
+    else
+    {
+        float ret = 1.0f;
+    }
+    
+    return __if__;
+}
+
+float ThinLeft_Step4()
+{
+    if (SampleOffset((float2){-1.0f, -1.0f}) <= 0.1f &&
+        //SampleOffset((float2){ 0.0f, -1.0f}) >= 0.9f &&
+        SampleOffset((float2){ 1.0f, -1.0f}) >= 0.9f &&
+        SampleOffset((float2){-1.0f,  0.0f}) <= 0.1f &&
+        SampleOffset((float2){ 0.0f,  0.0f}) >= 0.9f &&
+        SampleOffset((float2){ 1.0f,  0.0f}) >= 0.9f &&
+        SampleOffset((float2){-1.0f,  1.0f}) <= 0.1f &&
+        //SampleOffset((float2){ 0.0f,  1.0f}) <= 0.1f)
+        SampleOffset((float2){ 1.0f,  1.0f}) >= 0.9f)
+    {
+        float ret = 0.0f;
+    }
+    else
+    {
+        float ret = 1.0f;
+    }
+    
+    return __if__;
+}
+
+float ThinRight_Step4()
+{
+    if (SampleOffset((float2){-1.0f, -1.0f}) <= 0.1f &&
+        SampleOffset((float2){ 0.0f, -1.0f}) <= 0.1f &&
+        //SampleOffset((float2){ 1.0f, -1.0f}) >= 0.9f &&
+        SampleOffset((float2){-1.0f,  0.0f}) <= 0.1f &&
+        SampleOffset((float2){ 0.0f,  0.0f}) >= 0.9f &&
+        SampleOffset((float2){ 1.0f,  0.0f}) >= 0.9f &&
+        //SampleOffset((float2){-1.0f,  1.0f}) <= 0.1f &&
+        SampleOffset((float2){ 0.0f,  1.0f}) >= 0.9f)
+        //SampleOffset((float2){ 1.0f,  1.0f}) <= 0.1f)
+    {
+        float ret = 0.0f;
+    }
+    else
+    {
+        float ret = 1.0f;
+    }
+    
+    return __if__;
+}
+
+float Thinning3x3()
+{
+    float ret = ThinLeft_Step1();
+    ret *= ThinRight_Step1();
+    ret *= ThinLeft_Step2();
+    ret *= ThinRight_Step2();
+    ret *= ThinLeft_Step3();
+    ret *= ThinRight_Step3();
+    ret *= ThinLeft_Step4();
+    ret *= ThinRight_Step4();
+    
+    return 1.0f - ret;
+}

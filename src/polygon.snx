@@ -1,0 +1,111 @@
+#include "stdsnix.snx"
+
+#define LOOP_MAX 16
+
+float4 SampleOffsetColor(float2 offset)
+{
+    // Get the pixel size by divding 1 by the size of the input image
+    // and then multiply that by the offset passed.
+    float posX = $pos[0] + ((1.0f / $size[0]) * offset[0]);
+    float posY = $pos[1] + ((1.0f / $size[1]) * offset[1]);
+    
+    return sampleColor((float2){posX, posY});
+}
+
+float2 GetNextPixel(float2 position)
+{
+    if (position[0] >= $size[0])
+    {
+        float2 ret = {0.0f, position[1] + (1.0f / $size[1])};
+    }
+    else
+    {
+        float2 ret = {position[0] + (1.0f / $size[0]), position[1]};
+    }
+    
+    return __if__;
+}
+
+float polyToCoord(float4 a, float4 b, float2 pos)
+{
+    return ((b[0] - a[0]) * (pos[1] - a[1])) - ((b[1] - a[1]) * (pos[0] - a[0]));
+}
+
+float4 PaintIt()
+{
+    float4 data = sampleColor((float2){0.0f, 0.0f});
+    int polyCount = (int)(data[0] * 16.0f);
+    
+    float2 paintItPos = {0.0f, 0.0f};
+    int i = 0;
+    
+    float4 paintItPoly = sampleColor(paintItPos);
+    
+    for (i = 0; i < polyCount; i++)
+    {
+        paintItPos = GetNextPixel(paintItPos);
+        paintItPoly = sampleColor(paintItPos);
+    }
+    
+    float4 p = PaintIt();
+    
+    return __for__;
+}
+
+float4 rotate3D(float3 thetas, float3 origin, float4 vertex)
+{
+    float x = vertex[0] - origin[0];
+    float y = vertex[1] - origin[1];
+    float z = vertex[2] - origin[2];
+    
+    float tx = thetas[0];
+    float ty = thetas[1];
+    float tz = thetas[2];
+    
+    // Z
+    float sz = sin(tz);
+    float cz = cos(tz);
+    float rx = x * cz - y * sz;
+    float ry = y * cz + x * sz;
+    
+    // Y
+    float sy = sin(ty);
+    float cy = cos(ty);
+    rx = rx * cy - z * sy;
+    float rz = z * cy + rx * sy;
+    
+    // X
+    float sx = sin(tx);
+    float cx = cos(tx);
+    ry = ry * cx - rz * sx;
+    rz = rz * cx + ry * sx;
+    
+    // Offset with origin to reposition where vertex is supposed to be
+    return (float4){rx + origin[0], ry + origin[1], rz + origin[2], 0.0f};
+}
+
+float4 buildPoly(float3 rotate, float3 origin)
+{
+    float2 pos = {0.0f, 0.0f};
+    float2 pos2 = {0.5f, 0.5f};
+    
+    float4 vert1 = rotate3D(rotate, origin, sampleColor(pos));
+    float4 vert2 = rotate3D(rotate, origin, sampleColor((float2){pos2[0],  pos[1]}));
+    float4 vert3 = rotate3D(rotate, origin, sampleColor((float2){ pos[0], pos2[1]}));
+    float4 vertd = sampleColor(pos2);
+    
+    float w0 = polyToCoord(vert1, vert2, $pos);
+    float w1 = polyToCoord(vert2, vert3, $pos);
+    float w2 = polyToCoord(vert3, vert1, $pos);
+    
+    if (w0 >= 0.0f && w1 >= 0.0f && w2 >= 0.0f)
+    {
+        float4 ret = {w0, w1, w2, 1.0f};
+    }
+    else
+    {
+        float4 ret = {0.0f, 0.0f, 0.0f, 0.0f};  
+    }
+    
+    return __if__;
+}

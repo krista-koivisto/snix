@@ -1,0 +1,59 @@
+#include "stdsnix.snx"
+
+/* TODO:
+ * Fix: Use before declare.
+ * Write some fun functions and test before release. :)
+ * 
+ * Next version:
+ * Calling external functions
+ * Add assign to index
+ * Verify that everything will be referenced
+ * Add loop support
+*/
+
+/*
+ * SampleOffset
+ * 
+ * Samples a pixel in a location relative to the current pixel
+ * being processed and returns its value.
+ */
+float4 SampleOffsetColor(float2 offset)
+{
+    // Get the pixel size by divding 1 by the size of the input image
+    // and then multiply that by the offset passed.
+    float posX = $pos[0] + ((1.0f / $size[0]) * offset[0]);
+    float posY = $pos[1] + ((1.0f / $size[1]) * offset[1]);
+    
+    return sampleColor((float2){posX, posY});
+}
+
+/*
+ * SimpleEdgeDetect
+ * 
+ * Simple and quick basic edge detection algorithm. Checks
+ * that at least one surrounding pixel (in a cross formation,
+ * not full bounding box) is less than the bias and if that is
+ * the case, checks whether the current position has a value
+ * greater than or equal to the bias.
+ */
+float SimpleEdgeDetect(float bias)
+{
+    float value = sample($pos);
+    
+    // Sample pixels in a + formation and check against the bias
+    if (!(SampleOffset((float2){-1.0f,  0.0f}) >= bias  &&
+        SampleOffset((float2){ 1.0f,  0.0f}) >= bias  &&
+        SampleOffset((float2){ 0.0f, -1.0f}) >= bias  &&
+        SampleOffset((float2){ 0.0f,  1.0f}) >= bias) &&
+        value >= bias) // Compare the current pixel value as well
+    {
+        
+        float ret = 1.0f;
+    }
+    else
+    {
+        float ret = 0.0f;
+    }
+    
+    return __if__;
+}

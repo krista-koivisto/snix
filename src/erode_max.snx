@@ -1,0 +1,213 @@
+#include "src/stdsnix.snx"
+
+float SampleOffset(float2 offset)
+{
+    // Get the pixel size by divding 1 by the size of the input image
+    // and then multiply that by the offset passed.
+    float posX = $pos[0] + ((1.0f / $size[0]) * offset[0]);
+    float posY = $pos[1] + ((1.0f / $size[1]) * offset[1]);
+    
+    return sample((float2){posX, posY});
+}
+
+float SampleGrid(float current, float size) // Current = 5.0f, size = 9.0f
+{
+    float dimension = sqrt(size);
+    float center = floor(dimension / 2.0f);
+    
+    float row = floor(current / dimension);
+    float column = current - (row * dimension);
+    
+    return SampleOffset((float2){row - center, column - center});
+}
+
+float FindMax(float current, float size, float currentSample)
+{
+    return max(SampleGrid(current, size), currentSample);
+}
+
+float GetThickness(float2 direction, float bias)
+{
+    float value = sample($pos);
+    float2 offset_1x = direction * (float2){1.0f, 1.0f};
+    float2 offset_2x = direction * (float2){2.0f, 2.0f};
+    float2 offset_3x = direction * (float2){3.0f, 3.0f};
+    float2 offset_4x = direction * (float2){4.0f, 4.0f};
+    float2 offset_5x = direction * (float2){5.0f, 5.0f};
+    float2 offset_6x = direction * (float2){6.0f, 6.0f};
+    
+    if (value < bias)
+    {
+        if (SampleOffset(offset_1x) < bias)
+        {
+            if (SampleOffset(offset_2x) < bias)
+            {
+                if (SampleOffset(offset_3x) < bias)
+                {
+                    if (SampleOffset(offset_4x) < bias)
+                    {
+                        if (SampleOffset(offset_5x) < bias)
+                        {
+                            if (SampleOffset(offset_6x) < bias)
+                            {
+                                float ret = 7.0f;
+                            }
+                            else
+                            {
+                                float ret = 6.0f;
+                            }
+                        }
+                        else
+                        {
+                            float ret = 5.0f;
+                        }
+                    }
+                    else
+                    {
+                        float ret = 4.0f;
+                    }
+                }
+                else
+                {
+                    float ret = 3.0f;
+                }
+            }
+            else
+            {
+                float ret = 2.0f;
+            }
+        }
+        else
+        {
+            float ret = 1.0f;
+        }
+    }
+    else
+    {
+        float ret = 0.0f;
+    }
+    
+    return __if__;
+}
+
+float CanDilate3x3_Old(float bias, float minWidth)
+{
+    if ((GetThickness((float2){-1.0f,  1.0f}, bias) >= minWidth) ||
+        (GetThickness((float2){ 0.0f,  1.0f}, bias) >= minWidth) ||
+        (GetThickness((float2){ 1.0f,  1.0f}, bias) >= minWidth) ||
+        (GetThickness((float2){ 1.0f,  0.0f}, bias) >= minWidth) ||
+        (GetThickness((float2){ 1.0f, -1.0f}, bias) >= minWidth))
+    {
+        float ret = 1.0f;
+    }
+    else
+    {
+        float ret = 0.0f;
+    }
+    
+    return __if__;
+}
+
+float CanDilate3x3(float bias)
+{
+    float sample = 0.0f;
+    sample += SampleGrid(0.0f, 9.0f);
+    sample += SampleGrid(1.0f, 9.0f);
+    sample += SampleGrid(2.0f, 9.0f);
+    sample += SampleGrid(3.0f, 9.0f);
+    sample += SampleGrid(4.0f, 9.0f);
+    sample += SampleGrid(5.0f, 9.0f);
+    sample += SampleGrid(6.0f, 9.0f);
+    sample += SampleGrid(7.0f, 9.0f);
+    sample += SampleGrid(8.0f, 9.0f);
+    
+    sample = sample / 9.0f;
+    
+    if (sample > bias)
+    {
+        float ret = 1.0f;
+    }
+    else
+    {
+        float ret = 0.0f;
+    }
+    
+    return __if__;
+}
+
+float MaxDilate3x3(float bias)
+{
+    if (CanDilate3x3(bias) == 1.0f)
+    {
+        float sample = 0.0f;
+        sample = FindMax(0.0f, 9.0f, sample);
+        sample = FindMax(1.0f, 9.0f, sample);
+        sample = FindMax(2.0f, 9.0f, sample);
+        sample = FindMax(3.0f, 9.0f, sample);
+        sample = FindMax(4.0f, 9.0f, sample);
+        sample = FindMax(5.0f, 9.0f, sample);
+        sample = FindMax(6.0f, 9.0f, sample);
+        sample = FindMax(7.0f, 9.0f, sample);
+        sample = FindMax(8.0f, 9.0f, sample);
+	}
+	else
+	{
+        float sample = sample($pos);
+	}
+
+	return __if__;
+}
+
+float SampleLessThanBias(float pos, float size, float bias)
+{
+    if (SampleGrid(pos, size) < bias)
+    {
+        float ret = 1.0f;
+    }
+    else
+    {
+        float ret = 0.0f;
+    }
+    
+    return __if__;
+}
+
+float SampleGreaterThanBias(float pos, float size, float bias)
+{
+    if (SampleGrid(pos, size) > bias)
+    {
+        float ret = 1.0f;
+    }
+    else
+    {
+        float ret = 0.0f;
+    }
+    
+    return __if__;
+}
+
+float simpleSample(float bias)
+{
+    float value = sample($pos);// Dilated Image (Image 0)
+    
+    float ret = SampleLessThanBias(0.0f, 9.0f, bias); // Also image 0
+    ret += SampleLessThanBias(1.0f, 9.0f, bias);
+    ret += SampleLessThanBias(2.0f, 9.0f, bias);
+    ret += SampleLessThanBias(3.0f, 9.0f, bias);
+    ret += SampleLessThanBias(4.0f, 9.0f, bias);
+    ret += SampleLessThanBias(5.0f, 9.0f, bias);
+    ret += SampleLessThanBias(6.0f, 9.0f, bias);
+    ret += SampleLessThanBias(7.0f, 9.0f, bias);
+    ret += SampleLessThanBias(8.0f, 9.0f, bias);
+    
+    if (value == 0.0f && ret >= 2.0f)
+    {
+        float r = value;
+    }
+    else
+    {
+        float r = value;
+    }
+    
+    return __if__;
+}

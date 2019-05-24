@@ -1,0 +1,42 @@
+#include "inc/stdsnix.snx"
+
+float DegToRad(float angle)
+{
+    float pi = 3.14159f;
+    return (angle * pi / 180.0f);
+}
+
+float3 AngleToNormal(float rotation)
+{
+    float theta = DegToRad((sample($pos) + rotation) * 180.0f);
+    float c = cos(theta);
+    float s = sin(theta);
+    float x = (c - s);
+    float y = (c + s);
+    float z = 0.0f;
+    
+    return (float3){x, y, z};
+}
+
+float2 HeightToUV(float4 normal, float height, float strength)
+{
+    //float3 normal = AngleToNormal(height);
+    float nx = normal[0];
+    float ny = normal[1];
+    float nz = height;
+    float pi = 3.14159f;
+    float half_pi = pi / 2.0f;
+    
+    float u = (atan2((float2){nx, nz}) + half_pi) / pi;
+    float v = atan2((float2){1.0f, ny}) / half_pi;
+    
+    return (float2){u * strength, v * strength};
+}
+
+float2 SphereUV(float nx, float ny, float nz, float height, float strength)
+{
+    float u = (atan2((float2){nx, nz}) + pi) / (pi * 2.0f);
+    float v = atan2((float2){1.0f, ny}) / pi;
+    
+    return (float2){u * strength, v * strength};
+}

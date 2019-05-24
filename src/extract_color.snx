@@ -1,0 +1,108 @@
+#include "stdsnix.snx"
+
+float4 SampleOffsetColor(float2 offset)
+{
+    // Get the pixel size by divding 1 by the size of the input image
+    // and then multiply that by the offset passed.
+    float posX = $pos[0] + ((1.0f / $size[0]) * offset[0]);
+    float posY = $pos[1] + ((1.0f / $size[1]) * offset[1]);
+    
+    return sampleColor((float2){posX, posY});
+}
+
+float4 GetNewColor(int2 pos, float4 color, float bias)
+{
+    float4 col = SampleOffsetColor((float2){(float)pos[0], (float)pos[1]});
+    
+    if (col[0] > bias || col[1] > bias || col[2] > bias)
+    {
+        float4 ret = col;
+    }
+    else
+    {
+        float4 ret = color;
+    }
+
+    return __if__;
+}
+
+float4 ExtractRow(int row, float4 color, float bias)
+{
+    int2 pos = (int2){(int)$pos[0], ((int)$pos[1]) + row};
+    
+    color = GetNewColor(pos, color, bias);
+    pos = (int2){pos[0]++, pos[1]};
+    color = GetNewColor(pos, color, bias);
+    pos = (int2){pos[0]++, pos[1]};
+    color = GetNewColor(pos, color, bias);
+    pos = (int2){pos[0]++, pos[1]};
+    color = GetNewColor(pos, color, bias);
+    pos = (int2){pos[0]++, pos[1]};
+    color = GetNewColor(pos, color, bias);
+    pos = (int2){pos[0]++, pos[1]};
+    color = GetNewColor(pos, color, bias);
+    pos = (int2){pos[0]++, pos[1]};
+    color = GetNewColor(pos, color, bias);
+    pos = (int2){pos[0]++, pos[1]};
+    color = GetNewColor(pos, color, bias);
+    pos = (int2){pos[0]++, pos[1]};
+    color = GetNewColor(pos, color, bias);
+    pos = (int2){pos[0]++, pos[1]};
+    color = GetNewColor(pos, color, bias);
+    pos = (int2){pos[0]++, pos[1]};
+    color = GetNewColor(pos, color, bias);
+    pos = (int2){pos[0]++, pos[1]};
+    color = GetNewColor(pos, color, bias);
+    pos = (int2){pos[0]++, pos[1]};
+    color = GetNewColor(pos, color, bias);
+    pos = (int2){pos[0]++, pos[1]};
+    color = GetNewColor(pos, color, bias);
+    pos = (int2){pos[0]++, pos[1]};
+    color = GetNewColor(pos, color, bias);
+    pos = (int2){pos[0]++, pos[1]};
+    color = GetNewColor(pos, color, bias);
+    pos = (int2){pos[0]++, pos[1]};
+    
+    return color;
+}
+
+float4 ExtractColor(float bias)
+{
+    float4 color = (float4){0.0f, 0.0f, 0.0f, 0.0f};
+    int row = 0;
+    
+    color = ExtractRow(row, color, bias);
+    row++;
+    color = ExtractRow(row, color, bias);
+    row++;
+    color = ExtractRow(row, color, bias);
+    row++;
+    color = ExtractRow(row, color, bias);
+    row++;
+    color = ExtractRow(row, color, bias);
+    row++;
+    color = ExtractRow(row, color, bias);
+    row++;
+    color = ExtractRow(row, color, bias);
+    row++;
+    color = ExtractRow(row, color, bias);
+    row++;
+    color = ExtractRow(row, color, bias);
+    row++;
+    color = ExtractRow(row, color, bias);
+    row++;
+    color = ExtractRow(row, color, bias);
+    row++;
+    color = ExtractRow(row, color, bias);
+    row++;
+    color = ExtractRow(row, color, bias);
+    row++;
+    color = ExtractRow(row, color, bias);
+    row++;
+    color = ExtractRow(row, color, bias);
+    row++;
+    color = ExtractRow(row, color, bias);
+    row++;
+    
+    return color;
+}

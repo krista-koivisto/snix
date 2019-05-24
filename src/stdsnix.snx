@@ -1,0 +1,27 @@
+/*
+ * stdsnix.snx
+ * 
+ * Snix Standard Library
+ * 
+ * NOTE:
+ * The actual typedefs do not matter here, it's
+ * only to make the parser aware of the basic types.
+ * 
+ * Defines are currently limited to passing information
+ * to Snix itself, you cannot use them later in place
+ * of variables. Values can be changed by defining them
+ * again.
+ * 
+ * typedefs do not actually do anything!
+ * Do not add your own!
+*/
+typedef float* float2;
+typedef float* float3;
+typedef float* float4;
+typedef int* int2;
+typedef int* int3;
+typedef int* int4;
+typedef char bool;
+typedef char* string;
+
+#define LOOP_MAX 10

@@ -1,0 +1,15 @@
+float huh()
+{
+    float pi = 3.14159f;
+
+    float or_x = 0.25f * pi;
+    float or_y = 0.25f * (pi / 2.0f);
+    
+    float or_x_s = sin(or_x);
+    float or_x_c = cos(or_x);
+    float or_y_c = cos(or_y);
+    float or_y_s = sin(or_y);
+
+    float3 lookAt = (float3){or_x_s * or_y_c, or_x_c * or_y_c, or_y_s};
+    float3 camRight = (float3){or_x_c, -or_x_s, 0};
+}

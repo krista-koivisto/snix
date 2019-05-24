@@ -1,0 +1,83 @@
+#include "stdsnix.snx" 
+
+float DegToRad(float angle)
+{
+    float pi = 3.14159f;
+    return (angle * pi / 180.0f);
+}
+
+float2 AngleToPosition(float angle)
+{
+    float theta = DegToRad(angle);
+    float c = cos(theta);
+    float s = sin(theta);
+    float x = (c - s);
+    float y = (c + s);
+    
+    return (float2){x, y};
+}
+
+float4 StylizedShader(float3 normal, float3 diffuseColor, float3 specColor, float3 lightPos)
+{
+    float3 lightDir = lightPos;
+    float lambertian = max(dot(lightDir, normal), 0.0f);
+    
+    if(lambertian > 0.0f)
+    {
+        float3 reflectDir = reflect(-lightDir, normal);
+        float3 viewDir = (float3){0.0f, 0.0f, 1.0f};
+        
+        float specAngle = max(dot(reflectDir, viewDir), 0.0f);
+        float specular = pow(specAngle, 4.0f);
+        
+        float3 color = lambertian * diffuseColor + specular * specColor;
+        float4 ret = {color[0], color[1], color[2], 1.0f};
+    }
+    else
+    {
+        float4 ret = {0.0f, 0.0f, 0.0f, 1.0f};
+    }
+    
+    return __if__;
+}
+
+float StylizedLight(float3 normal, float3 lightPos, float hardness)
+{
+    float lambertian = max(dot(lightPos, normal), 0.0f);
+    
+    if (lambertian > hardness)
+    {
+        float ret = lambertian;
+    }
+    else
+    {
+        float ret = 0.0f;
+    }
+    
+    return __if__;
+}
+
+float3 NormalFromImage(float4 normal)
+{
+    float nx=(2.0f * normal[0]) - 1.0f;
+    float ny=(2.0f * normal[1]) - 1.0f;
+    float nz=(2.0f * normal[2]) - 1.0f;
+    
+    return (float3){nx, ny, nz};
+}
+
+float4 Draw(float lightAngle, float lightHeight, float hardness)
+{
+    float4 color = sampleColor($pos);
+    float2 light2D = AngleToPosition(lightAngle * 360.0f);
+    float3 light3D = {light2D[0], light2D[1], lightHeight};
+    float3 normal = NormalFromImage(color);
+    float3 specColor = {1.0f, 1.0f, 1.0f};
+    float3 diffuseColor = {color[0], color[1], color[2]};
+    
+    float lamb = StylizedLight(normal, light3D, hardness);
+    
+    return (float4){lamb, lamb, lamb, 1.0f};
+    
+    //return StylizedShader(normal, diffuseColor, specColor, light3D);
+}
